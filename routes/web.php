@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\UserRoleController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,5 +33,16 @@ Route::middleware(['auth'])->group(function () {
         )
         ->name('two-factor.show');
 });
+
+Route::get('/admin', fn() => 'Admin.panel')
+    ->middleware('role:Admin');
+
+Route::middleware(['auth', 'role:Admin'])->prefix('admin')
+    ->name('admin')->group(function(){
+        Route::resource('roles', RoleController::class);
+        Route::resource('permissions', PermissionController::class);
+        Route::get('user/{user}/roles', [UserRoleController::class, 'edit'])->name('users.roles.edit');
+        Route::put('users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+    });
 
 require __DIR__.'/auth.php';
